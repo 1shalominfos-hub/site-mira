@@ -6,6 +6,7 @@ Site web professionnel, responsive et léger pour MIRA ÉLEVAGE. La version actu
 
 - Présenter MIRA ÉLEVAGE comme un acteur d’élevage, d’agroéquipement et de formation.
 - Proposer des espaces pour produits, services, équipements, formations, réalisations, galerie et actualités.
+- Répondre dans le chat MIRA aux questions fréquentes et orienter vers WhatsApp pour les demandes personnalisées.
 - Préparer les données pour une future API ou base de données.
 - Faciliter la connexion d’un futur agent vocal.
 
@@ -77,12 +78,12 @@ Le numéro WhatsApp, le numéro de téléphone et les informations de l’entrep
 
 ## Futur WebApp
 
-La couche actuelle est volontairement compacte. Pour l’édition future :
+Le chat MIRA actuel répond côté navigateur à partir de la FAQ du site ; il ne s’agit pas d’une IA connectée. Pour ajouter des réponses générées ou des fonctions vocales, une API sécurisée côté serveur sera nécessaire. La couche actuelle est volontairement compacte. Pour l’édition future :
 
 1. Déplacer les données de `data.js` vers une API ou une base.
 2. Ajouter une administration privée avec des rôles.
 3. Reutiliser les composants de cartes, boutons, formulaires et filtres.
 4. Connecter le formulaire de devis à une API sécurisée.
-5. Connecter MIRA Agent à un moteur vocal asynchrone.
+5. Connecter MIRA Agent à une API conversationnelle sécurisée et à un moteur vocal asynchrone.
 
 Le site ne doit jamais contenir de clé API secrète dans le frontend.

@@ -310,9 +310,16 @@
 
   <button class="agent-button agent-trigger" type="button" aria-label="Ouvrir l'agent MIRA"><span class="agent-orb">✦</span><span>Parler à MIRA</span><i>⌁</i></button>
   <aside class="agent-panel" id="agent-panel" aria-label="Agent MIRA" aria-hidden="true">
-    <div class="agent-header"><div><span class="agent-status"></span><div><strong>MIRA Agent</strong><small>Assistant bientôt disponible</small></div></div><button class="agent-close" type="button" aria-label="Fermer">×</button></div>
-    <div class="agent-body"><div class="agent-message"><span>✦</span><p>Bonjour ! Je suis MIRA Agent. Le service vocal est actuellement en préparation.</p></div><div class="agent-message user"><p>Vous pouvez contacter MIRA directement.</p></div><div class="agent-placeholder"><strong>Agent MIRA bientôt disponible</strong><p>La dalle vocale sera connectée ultérieurement sans modifier la structure du site.</p></div></div>
-    <div class="agent-input"><input type="text" placeholder="Écrivez votre message..." aria-label="Message"><button type="button" aria-label="Envoyer">➤</button></div>
+    <div class="agent-header"><div><span class="agent-status"></span><div><strong>MIRA Agent</strong><small>Disponible · Réponses instantanées</small></div></div><button class="agent-close" type="button" aria-label="Fermer">×</button></div>
+    <div class="agent-body" aria-live="polite" aria-relevant="additions">
+      <div class="agent-message"><span>✦</span><p>Bonjour ! Posez-moi vos questions sur MIRA, nos activités, équipements, devis ou formations.</p></div>
+      <div class="agent-suggestions" aria-label="Questions fréquentes">
+        <button class="agent-suggestion" type="button" data-message="Quels services propose MIRA ?">Vos services</button>
+        <button class="agent-suggestion" type="button" data-message="Comment demander un devis ?">Demander un devis</button>
+        <button class="agent-suggestion" type="button" data-message="Comment vous contacter ?">Nous contacter</button>
+      </div>
+    </div>
+    <form class="agent-input"><input type="text" placeholder="Écrivez votre message..." aria-label="Message à MIRA" autocomplete="off"><button type="submit" aria-label="Envoyer le message">➤</button></form>
   </aside>
   <div class="agent-backdrop" hidden></div>
 

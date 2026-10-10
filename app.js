@@ -240,21 +240,95 @@ const setupNavigation = () => {
 const setupAgent = () => {
   const panel = $('#agent-panel');
   const backdrop = $('.agent-backdrop');
+  const body = $('.agent-body');
+  const form = $('.agent-input');
+  const input = $('input', form);
   const openPanel = () => { panel.classList.add('open'); panel.setAttribute('aria-hidden', 'false'); backdrop.hidden = false; document.body.classList.add('agent-open'); };
   const closePanel = () => { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true'); backdrop.hidden = true; document.body.classList.remove('agent-open'); };
-  $$('.agent-trigger').forEach(button => button.addEventListener('click', openPanel));
+  $$('.agent-trigger').forEach(button => button.addEventListener('click', () => { openPanel(); input.focus(); }));
   $('.agent-close').addEventListener('click', closePanel);
   backdrop.addEventListener('click', closePanel);
   document.addEventListener('keydown', event => { if (event.key === 'Escape') closePanel(); });
-  $('.agent-input button').addEventListener('click', event => {
-    const input = $('.agent-input input');
-    if (!input.value.trim()) return;
+
+  const addMessage = (text, sender = 'agent', link) => {
+    const message = document.createElement('div');
+    message.className = `agent-message ${sender}`;
+    if (sender === 'agent') {
+      const icon = document.createElement('span');
+      icon.textContent = '✦';
+      message.append(icon);
+    }
+    const paragraph = document.createElement('p');
+    paragraph.textContent = text;
+    message.append(paragraph);
+    if (link) {
+      const anchor = document.createElement('a');
+      anchor.href = link.href;
+      anchor.textContent = link.label;
+      if (link.external) {
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+      }
+      message.append(anchor);
+    }
+    body.append(message);
+    body.scrollTop = body.scrollHeight;
+  };
+
+  const getReply = message => {
+    const normalized = message.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (/^(bonjour|bonsoir|salut|hello|coucou)\b/.test(normalized)) {
+      return { text: 'Bonjour ! Je peux vous renseigner sur MIRA, l’élevage, les équipements, les devis, les formations et nos coordonnées. Que souhaitez-vous savoir ?' };
+    }
+    if (/\b(contact\w*|telephone|numero|appeler|whatsapp|adresse|situe|localisation|trouve)\b/.test(normalized)) {
+      return {
+        text: 'MIRA ÉLEVAGE se trouve à Karpala, Ouagadougou, Burkina Faso. Vous pouvez appeler au +226 70 93 40 50 ou nous écrire sur WhatsApp.',
+        link: { href: `https://wa.me/${settings.company.whatsappNumber}`, label: 'Écrire à MIRA sur WhatsApp', external: true }
+      };
+    }
+    const intent = [
+      { pattern: /\b(formation|formations|cifea|apprendre|apprentissage|stage)\b/, category: 'Formations et CIFEA' },
+      { pattern: /\b(devis|prix|tarif|commander|commande|renseignement|cout)\b/, category: 'Équipements et matériels' },
+      { pattern: /\b(elevage|volaille|production|agricole|projet|ferme)\b/, category: 'Élevage et productions' },
+      { pattern: /\b(entreprise|activite|mission|propos|mira|services)\b/, category: 'Présentation' }
+    ].find(item => item.pattern.test(normalized));
+    const stopWords = new Set(['avec', 'dans', 'elle', 'elles', 'est', 'faire', 'fait', 'comment', 'des', 'les', 'leur', 'leurs', 'nous', 'notre', 'peut', 'pour', 'quels', 'quelle', 'quelles', 'qui', 'sont', 'sur', 'vous', 'votre']);
+    const queryTerms = normalized.match(/[a-z0-9]+/g).filter(term => term.length > 3 && !stopWords.has(term));
+    const rankedFaq = faq.map(item => {
+      const terms = `${item.category} ${item.question}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+        .match(/[a-z0-9]+/g).filter(term => term.length > 3 && !stopWords.has(term));
+      return { item, score: queryTerms.filter(queryTerm => terms.some(term => term.includes(queryTerm) || queryTerm.includes(term))).length };
+    }).sort((left, right) => right.score - left.score);
+    const matchedFaq = intent
+      ? faq.find(item => item.category === intent.category)
+      : rankedFaq[0]?.score > 0 ? rankedFaq[0].item : null;
+    if (matchedFaq) {
+      const needsQuoteLink = matchedFaq.category === 'Équipements et matériels' || matchedFaq.category === 'Commandes, devis et renseignements';
+      return {
+        text: matchedFaq.answer,
+        link: needsQuoteLink ? { href: '#demande-devis', label: 'Faire une demande de devis' } : undefined
+      };
+    }
+    return {
+      text: 'Je n’ai pas cette information dans mes réponses pour le moment. Pour une réponse personnalisée, contactez directement l’équipe MIRA.',
+      link: { href: `https://wa.me/${settings.company.whatsappNumber}`, label: 'Contacter MIRA sur WhatsApp', external: true }
+    };
+  };
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
     const message = input.value.trim();
-    const body = $('.agent-body');
-    body.insertAdjacentHTML('beforeend', `<div class="agent-message user"><p>${message.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}</p></div>`);
+    if (!message) return;
+    addMessage(message, 'user');
     input.value = '';
-    setTimeout(() => body.insertAdjacentHTML('beforeend', '<div class="agent-placeholder"><strong>Agent MIRA bientôt disponible</strong><p>Nous vous invitons à contacter MIRA directement pour une réponse personnalisée.</p></div>'), 600);
+    const reply = getReply(message);
+    addMessage(reply.text, 'agent', reply.link);
   });
+  $$('.agent-suggestion').forEach(button => button.addEventListener('click', () => {
+    input.value = button.dataset.message;
+    form.requestSubmit();
+    input.focus();
+  }));
 };
 
 const setupForm = () => {
